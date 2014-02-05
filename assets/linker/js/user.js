@@ -32,7 +32,13 @@ function removeUser(user) {
   var userName = $('#user-'+id).text();
 
   // Remove the corresponding element from the users list
-  $('#user-'+id).remove();
+  var userEl = $('#user-'+id).remove();
+
+  // Re-append it to the body as a hidden element, so we can still
+  // get the user's name if we need it for other messages.  
+  // A silly hack for a silly app.
+  userEl.css('display', 'none');
+  $('body').append(userEl);
 
   // Post a user status message if we're in a private convo
   if ($('#private-room-'+id).length) {
