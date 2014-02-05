@@ -42,6 +42,8 @@ module.exports = {
  		// Instead of just notifying subscribers to the user, notify EVERYONE about
  		// the user being destroyed.
 		sails.sockets.blast('user', {verb: "destroyed", id: id});
+		// If a specific user is being destroyed (as opposed to all of them being wiped out
+		// in the bootstrap) then let each of their rooms know that they left.
 		if (user) {
 			sails.util.each(user.rooms, function(room) {
 				Room.publishRemove(room.id, 'users', user.id);
