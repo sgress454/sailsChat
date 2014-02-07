@@ -21,6 +21,9 @@ console.log('Connecting Socket.io to Sails.js...');
 // Attach a listener which fires when a connection is established:
 socket.on('connect', function socketConnected() {
 
+    $('#disconnect').hide();
+    $('#main').show();
+
     // Once we have a connected socket, start listening for other events.
 
     // Listen for the "hello" event from the server, which will provide us
@@ -28,27 +31,17 @@ socket.on('connect', function socketConnected() {
     // and a list of available public chat rooms (data.rooms).  Open the /config/sockets.js
     // file to see where the "hello" event is emitted.
     socket.on('hello', function(data) {
-      window.me = data.me;
-      updateMyName(data.me);
-      updateUserList(data.users);
-      updateRoomList(data.rooms);
+      window.me = data;
+      updateMyName(data);
     });
 
-    // Listen for the "privateMessage" event, emitted in the ChatController's "private" action.
-    // receivePrivateMessage() is defined in private_message.js
-    socket.on('privateMessage', receivePrivateMessage);
+    // Get the current list of users online.  This will also subscribe us to
+    // update and destroy events for the individual users.
+    socket.get('/user', updateUserList);
 
-    // Listen for the "publicMessage" event, emitted in the ChatController's "public" action.
-    // receivePublicMessage() is defined in public_message.js
-    socket.on('publicMessage', receiveRoomMessage);
-
-    // Handle a notification that a new room was created
-    // addRoom is defined room.js
-    socket.on('createRoom', addRoom);
-
-    // Handle a notification that a new user was created
-    // addUser is defined in user.js
-    socket.on('createUser', addUser); 
+    // Get the current list of chat rooms. This will also subscribe us to
+    // update and destroy events for the individual rooms.
+    socket.get('/room', updateRoomList);
 
     // Add a click handler for the "Update name" button, allowing the user to update their name.
     // updateName() is defined in user.js.
@@ -68,58 +61,88 @@ socket.on('connect', function socketConnected() {
 
     socket.on('room', function messageReceived(message) {
 
-      // Post a message when someone joins a room we're in
-      if (message.verb == 'addedTo' && message.attribute == 'users') {
-        postStatusMessage('room-messages-'+message.id, $('#user-'+message.addedId).text()+' has joined');
-      }
+      switch (message.verb) {
+        
+        // Handle room creation
+        case 'created':
+          addRoom(message.data);
+          break;
 
-      // Post a message when someone leaves a room we're in
-      else if (message.verb == 'removedFrom' && message.attribute == 'users') {
-        postStatusMessage('room-messages-'+message.id, $('#user-'+message.removedId).text()+' has left');
-      }
+        // Handle a user joining a room
+        case 'addedTo':
+          postStatusMessage('room-messages-'+message.id, $('#user-'+message.addedId).text()+' has joined');
+          break;
 
-      // Remove a room from the list if it's destroyed
-      else if (message.verb == 'destroyed') {
-        removeRoom(message.id)
+        // Handle a user leaving a room
+        case 'removedFrom':
+          postStatusMessage('room-messages-'+message.id, $('#user-'+message.removedId).text()+' has left');
+          break;
+
+        // Handle a room being destroyed
+        case 'destroyed':
+          removeRoom(message.id);
+          break;
+
+        // Handle a public message in a room
+        case 'messaged':
+          receiveRoomMessage(message.data);
+
+        default:
+          break;
+
       }
 
     });
 
     socket.on('user', function messageReceived(message) {
 
-      // Handle a user changing their name
-      if (message.verb == "updated") {
+      switch (message.verb) {
 
-        // Get the user's old name by finding the <option> in the list with their ID
-        // and getting its text.
-        var oldName = $('#user-'+message.id).text();
+        // Handle user creation
+        case 'created':
+          addUser(message.data);
+          break;
 
-        // Update the name in the user select list
-        $('#user-'+message.id).text(message.data.name);
+        // Handle a user changing their name
+        case 'updated':
 
-        // If we have a private convo with them, update the name there and post a status message in the chat.
-        if ($('#private-username-'+message.id).length) {
-          $('#private-username-'+message.id).html(message.data.name);
-          postStatusMessage('private-messages-'+message.id,oldName+' has changed their name to '+message.data.name);
-        }
+          // Get the user's old name by finding the <option> in the list with their ID
+          // and getting its text.
+          var oldName = $('#user-'+message.id).text();
 
-      }
+          // Update the name in the user select list
+          $('#user-'+message.id).text(message.data.name);
 
-      // Remove a user from the list if they're destroyed
-      else if (message.verb == "destroyed") {
-        removeUser(message.id);
+          // If we have a private convo with them, update the name there and post a status message in the chat.
+          if ($('#private-username-'+message.id).length) {
+            $('#private-username-'+message.id).html(message.data.name);
+            postStatusMessage('private-messages-'+message.id,oldName+' has changed their name to '+message.data.name);
+          }
+
+          break;
+        
+        // Handle user destruction
+        case 'destroyed':
+          removeUser(message.id);
+          break;
+      
+        // Handle private messages
+        case 'messaged':
+          receivePrivateMessage(message.data);
+          break;
+
+        default:
+          break;
       }
 
     });
 
     console.log('Socket is now connected!');
 
+    // When the socket disconnects, remove all listeners and start listening for a reconnect.
     socket.on('disconnect', function() {
-      socket.removeAllListeners();
-      $('body').html('Server down...');
-      socket.on('connect', function() {
-        $('body').html('<a href="javascript:window.location.reload();">Click here to reload.</a>');
-      });
+      $('#main').hide();
+      $('#disconnect').show();
     });
 
 });

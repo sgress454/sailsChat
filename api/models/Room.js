@@ -8,6 +8,7 @@
 
 module.exports = {
 
+  autosubscribe: ['destroy', 'update', 'add:users', 'remove:users'],
   attributes: {
 
 		name: 'string',
@@ -31,19 +32,12 @@ module.exports = {
   		// If this was the last user, close the room.  
   		if (room.users.length === 0) {
   			room.destroy(function(err) {
+          // Alert all sockets subscribed to the room that it's been destroyed.
   				Room.publishDestroy(room.id);
   			});
   		}
   	});
 
-  },
-
-	// Override the default publishDestroy method for this model.
-  publishDestroy: function(id) {
- 		// Instead of just notifying subscribers to the room, notify EVERYONE about
- 		// the user being destroyed.  	
-  	sails.sockets.blast('room', {verb: "destroyed", id: id});
   }
-
 
 };

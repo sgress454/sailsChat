@@ -8,6 +8,10 @@
 
 module.exports = {
 
+  // Subscribers only get to hear about update and destroy events.
+  // This lets us keep our "users online" list accurate, while avoiding
+  // sending private messages to anyone but the intended recipient.
+  autosubscribe: ['destroy', 'update'],
   attributes: {
 	
 	name: 'string',
@@ -18,11 +22,10 @@ module.exports = {
 	
   },
 
-  	// Override the default publishUpdate method for this model.
-	publishUpdate: function (id, changes, req) {
- 		// Instead of just notifying subscribers to the user, notify EVERYONE about
- 		// the changes to the model.
-		sails.sockets.blast('user', {verb: "updated", id: id, data: changes}, req);
+  	// Hook that gets called after the default publishUpdate is run.
+  	// We'll use this to tell all public chat rooms about the user update.
+	afterPublishUpdate: function (id, changes, req, options) {
+
 		// Get the full user model, including what rooms they're subscribed to
 		User.findOne(id).populate('rooms').exec(function(err, user) {
 			// Publish a message to each room they're in.  Any socket that is 
@@ -30,25 +33,12 @@ module.exports = {
 			// will indicate to the front-end code that this is a systen message
 			// (as opposed to a message from a user)
 			sails.util.each(user.rooms, function(room) {
-				Room.publish(rooms, {method: 'publicMessage', room:{id:room.id}, from: {id:0}, msg: message}, req);		
+				var previousName = options.previous.name == 'unknown' ? 'User #'+id : options.previous.name;
+				Room.message(room.id, {room:{id:room.id}, from: {id:0}, msg: previousName+" changed their name to "+changes.name}, req);		
 			});
 			
 		});
 		
-	},
-
-	// Override the default publishDestroy method for this model.
-	publishDestroy: function (id, req, user) {
- 		// Instead of just notifying subscribers to the user, notify EVERYONE about
- 		// the user being destroyed.
-		sails.sockets.blast('user', {verb: "destroyed", id: id});
-		// If a specific user is being destroyed (as opposed to all of them being wiped out
-		// in the bootstrap) then let each of their rooms know that they left.
-		if (user) {
-			sails.util.each(user.rooms, function(room) {
-				Room.publishRemove(room.id, 'users', user.id);
-			});
-		}
 	}
 
 };

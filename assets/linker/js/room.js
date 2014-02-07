@@ -14,8 +14,11 @@ function newRoom() {
       // Select it in the list
       $('#rooms-list').val(data.id);
 
-      // Join the selected room--this will also create the room HTML
-      joinRoom();
+      // Create the room HTML
+      createPublicRoom({id:data.id, name:data.name});
+
+      // Join the room
+      socket.post('/room/'+data.id+'/users', {id: window.me.id});
     });
   }
 

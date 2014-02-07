@@ -18,55 +18,56 @@ module.exports.sockets = {
 
     var socketId = sails.sockets.id(socket);
 
-    async.auto({
-        // Get a list of all current users.  We'll do this first
-        // so that the new user is not included in the list
-        users: function(cb) {
-          User.find().exec(cb);
-        },
-        // Get a list of all current rooms
-        rooms: function(cb) {
-          Room.find().exec(cb);
-        },
-        // Create a new user after we have the lists of users and rooms
-        me: ['users', 'rooms', function(cb) {
-          User.create({name: 'unknown', socketId: socketId}).exec(cb);
-        }]
-      },
+    User.create({name: 'unknown', socketId: socketId}).exec(function(err, user) {
 
-      // Once all that is done, send out a "hello" message to the client
-      // with all the information we just got.
-      function(err, result) {
-
-        // Save the user in the socket's session
+        // Create the session.users hash if it doesn't exist already
         session.users = session.users || {};
-        session.users[socketId] = result.me;
+
+        // Save this user in the session, indexed by their socket ID.
+        // This way we can look the user up by socket ID later.
+        session.users[socketId] = user;
+
+        // Persist the session
         session.save();
 
-        User.subscribe(socket, result.me);
+        // Send a message to the client with information about the new user
+        sails.sockets.emit(socketId, 'hello', user);
 
-        sails.sockets.emit(socketId, 'hello', result);
+        // Subscribe the connected socket to custom messages regarding the user.
+        // While any socket subscribed to the user will receive messages about the
+        // user changing their name or being destroyed, ONLY this particular socket
+        // will receive "message" events.  This allows us to send private messages
+        // between users.
+        User.subscribe(socket, user, 'message');
 
-        // Broadcast a message to all other sockets, letting them know
-        // that the user has been created.  
-        sails.sockets.blast('createUser', result.me.toJSON(), socket);
+        // Get updates about users being created
+        User.watch(socket);
 
-      }
+        // Get updates about rooms being created
+        Room.watch(socket);
 
-    );
+        // Publish this user creation event to every socket watching the User model via User.watch()
+        User.publishCreate(user, socket);
+
+    });
+      
 
   },
 
   // This custom onDisconnect function will be run each time a socket disconnects
   onDisconnect: function(session, socket) {
 
-      // Get the user ID
+      // Look up the user ID using the connected socket
       var userId = session.users[sails.sockets.id(socket)].id;
 
-      // Get the user
+      // Get the user instance
       User.findOne(userId).populate('rooms').exec(function(err, user) {
+
+        // Destroy the user instance
         User.destroy({id:user.id}).exec(function(){});
-        User.publishDestroy(user.id, null, user);
+
+        // Publish the destroy event to every socket subscribed to this user instance
+        User.publishDestroy(user.id, null, {previous: user});
       });
 
   },
