@@ -19,6 +19,10 @@ function newRoom() {
 
       // Join the room
       socket.post('/room/'+data.id+'/users', {id: window.me.id});
+
+      // Set the room user count to 1
+      increaseRoomCount(data.id);
+
     });
   }
 
@@ -33,10 +37,28 @@ function addRoom(room) {
   var select = $('#rooms-list');
 
   // Create a new <option> for the <select> with the new room's information
-  var option = $('<option id="'+"room-"+room.id+'" value="'+room.id+'">'+room.name+'</option>');
+  var users = room.users || [];
+  var numUsers = users.length;
+  var option = $('<option id="'+"room-"+room.id+'" data-name="'+room.name+'" data-users="'+numUsers+'" value="'+room.id+'">'+room.name+' ('+numUsers+')</option>');
 
   // Add the new <option> element
   select.append(option);
+}
+
+function increaseRoomCount(roomId) {
+  var room = $('#room-'+roomId);
+  var numUsers = parseInt(room.attr('data-users'), 10);
+  numUsers++;
+  room.attr('data-users', numUsers);
+  room.html(room.attr('data-name')+' ('+numUsers+')');
+}
+
+function decreaseRoomCount(roomId) {
+  var room = $('#room-'+roomId);
+  var numUsers = parseInt(room.attr('data-users'), 10);
+  numUsers--;
+  room.attr('data-users', numUsers);
+  room.html(room.attr('data-name')+' ('+numUsers+')');
 }
 
 // Remove a user from the list of available rooms to join, by sending 

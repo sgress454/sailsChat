@@ -70,12 +70,18 @@ socket.on('connect', function socketConnected() {
 
         // Handle a user joining a room
         case 'addedTo':
+          // Post a message in the room
           postStatusMessage('room-messages-'+message.id, $('#user-'+message.addedId).text()+' has joined');
+          // Update the room user count
+          increaseRoomCount(message.id);
           break;
 
         // Handle a user leaving a room
         case 'removedFrom':
+          // Post a message in the room
           postStatusMessage('room-messages-'+message.id, $('#user-'+message.removedId).text()+' has left');
+          // Update the room user count
+          decreaseRoomCount(message.id);
           break;
 
         // Handle a room being destroyed

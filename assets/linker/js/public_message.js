@@ -96,7 +96,7 @@ function joinRoom() {
   }
 
   // Get the room's name from the text of the option in the <select>
-  var roomName = $('option:selected', select).text();
+  var roomName = $('option:selected', select).attr('data-name');
   var roomId = select.val();
 
   // Create the room HTML
@@ -104,6 +104,9 @@ function joinRoom() {
 
   // Join the room
   socket.post('/room/'+roomId+'/users', {id: window.me.id});
+
+  // Update the room user count
+  increaseRoomCount(roomId);
 
 }
 
@@ -119,6 +122,10 @@ function onClickLeaveRoom(e) {
   // Remove the room from the page
   $('#public-room-'+roomId).remove();
    
+  // Call the server to leave the room
   socket.delete('/room/'+roomId+'/users', {id: window.me.id});
+
+  // Update the room user count
+  decreaseRoomCount(roomId);
 
 }
