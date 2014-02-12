@@ -27,8 +27,7 @@ socket.on('connect', function socketConnected() {
     // Once we have a connected socket, start listening for other events.
 
     // Listen for the "hello" event from the server, which will provide us
-    // with information about our user (data.me), a list of other users (data.users)
-    // and a list of available public chat rooms (data.rooms).  Open the /config/sockets.js
+    // with information about our user (data.me). Open the /config/sockets.js
     // file to see where the "hello" event is emitted.
     socket.on('hello', function(data) {
       window.me = data;
