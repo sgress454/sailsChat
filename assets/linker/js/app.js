@@ -1,14 +1,8 @@
 /**
- * example.js
+ * app.js
  *
- * This file contains some example browser-side JavaScript for connecting
- * to your Sails backend using Socket.io.
+ * Front-end code and event handling for sailsChat
  *
- * It is designed to get you up and running fast, but it's just an example.
- * Feel free to change none, some, or ALL of this file to fit your needs!
- *
- * For an annotated version of this example, see:
- *   *-> https://gist.github.com/mikermcneil/8465536
  */
 
 
@@ -21,6 +15,7 @@ console.log('Connecting Socket.io to Sails.js...');
 // Attach a listener which fires when a connection is established:
 socket.on('connect', function socketConnected() {
 
+    // Show the main UI
     $('#disconnect').hide();
     $('#main').show();
 
@@ -34,30 +29,10 @@ socket.on('connect', function socketConnected() {
       updateMyName(data);
     });
 
-    // Get the current list of users online.  This will also subscribe us to
-    // update and destroy events for the individual users.
-    socket.get('/user', updateUserList);
-
-    // Get the current list of chat rooms. This will also subscribe us to
-    // update and destroy events for the individual rooms.
-    socket.get('/room', updateRoomList);
-
-    // Add a click handler for the "Update name" button, allowing the user to update their name.
-    // updateName() is defined in user.js.
-    $('#update-name').click(updateName);
-
-    // Add a click handler for the "Send private message" button
-    // startPrivateConversation() is defined in private_message.js.
-    $('#private-msg-button').click(startPrivateConversation);
-
-    // Add a click handler for the "Join room" button
-    // joinRoom() is defined in public_message.js.
-    $('#join-room').click(joinRoom);
-
-    // Add a click handler for the "New room" button
-    // newRoom() is defined in room.js.
-    $('#new-room').click(newRoom);
-
+    // Listen for the "room" event, which will be broadcast when something
+    // happens to a room we're subscribed to.  See the "autosubscribe" attribute
+    // of the Room model to see which messages will be broadcast by default
+    // to subscribed sockets.
     socket.on('room', function messageReceived(message) {
 
       switch (message.verb) {
@@ -88,7 +63,9 @@ socket.on('connect', function socketConnected() {
           removeRoom(message.id);
           break;
 
-        // Handle a public message in a room
+        // Handle a public message in a room.  Only sockets subscribed to the "message" context of a
+        // Room instance will get this message--see the "join" and "leave" methods of RoomController.js
+        // to see where a socket gets subscribed to a Room instance's "message" context.
         case 'messaged':
           receiveRoomMessage(message.data);
 
@@ -99,6 +76,10 @@ socket.on('connect', function socketConnected() {
 
     });
 
+    // Listen for the "room" event, which will be broadcast when something
+    // happens to a user we're subscribed to.  See the "autosubscribe" attribute
+    // of the User model to see which messages will be broadcast by default
+    // to subscribed sockets.
     socket.on('user', function messageReceived(message) {
 
       switch (message.verb) {
@@ -131,7 +112,9 @@ socket.on('connect', function socketConnected() {
           removeUser(message.id);
           break;
       
-        // Handle private messages
+        // Handle private messages.  Only sockets subscribed to the "message" context of a
+        // User instance will get this message--see the onConnect logic in config/sockets.js
+        // to see where a new user gets subscribed to their own "message" context
         case 'messaged':
           receivePrivateMessage(message.data);
           break;
@@ -142,10 +125,35 @@ socket.on('connect', function socketConnected() {
 
     });
 
+    // Get the current list of users online.  This will also subscribe us to
+    // update and destroy events for the individual users.
+    socket.get('/user', updateUserList);
+
+    // Get the current list of chat rooms. This will also subscribe us to
+    // update and destroy events for the individual rooms.
+    socket.get('/room', updateRoomList);
+
+    // Add a click handler for the "Update name" button, allowing the user to update their name.
+    // updateName() is defined in user.js.
+    $('#update-name').click(updateName);
+
+    // Add a click handler for the "Send private message" button
+    // startPrivateConversation() is defined in private_message.js.
+    $('#private-msg-button').click(startPrivateConversation);
+
+    // Add a click handler for the "Join room" button
+    // joinRoom() is defined in public_message.js.
+    $('#join-room').click(joinRoom);
+
+    // Add a click handler for the "New room" button
+    // newRoom() is defined in room.js.
+    $('#new-room').click(newRoom);
+
     console.log('Socket is now connected!');
 
-    // When the socket disconnects, remove all listeners and start listening for a reconnect.
+    // When the socket disconnects, hide the UI until we reconnect.
     socket.on('disconnect', function() {
+      // Hide the main UI
       $('#main').hide();
       $('#disconnect').show();
     });

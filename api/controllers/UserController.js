@@ -1,4 +1,5 @@
-// Note -- all code related to User models is implemented as lifecycle callbacks in models/User.js
+// Note -- we need a UserController so that blueprints will be activated for User,
+// but we don't need any custom User controller code for this app!
 
 module.exports = {
 

@@ -11,6 +11,8 @@ module.exports = {
   // Subscribers only get to hear about update and destroy events.
   // This lets us keep our "users online" list accurate, while avoiding
   // sending private messages to anyone but the intended recipient.
+  // To get chat messages for a user, you subscribe to the `message`
+  // context explicitly.
   autosubscribe: ['destroy', 'update'],
   attributes: {
 	
