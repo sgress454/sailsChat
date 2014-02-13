@@ -18,6 +18,7 @@ module.exports = {
 	rooms: {
 		collection: 'room',
 		via: 'users',
+		dominant: true
 	}
 	
   },
