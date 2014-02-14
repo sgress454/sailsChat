@@ -19,3 +19,7 @@ Clone the repo into a new directory, `npm install` and `sails lift`, and you're 
 ## Using
 
 Browse to `http://localhost:1337` to view the app in all its glory.  A new user will be created for you automatically.  Of course, a chat app isn't much fun with just one user, so open another tab or browser window to the same address to pop up a new user.  Then use the "Send private message" button to communicate directly between two users, or start a new chat room to chat with a group!
+
+## More
+
+On the [wiki](https://github.com/balderdashy/sailsChat/wiki).
