@@ -10,6 +10,8 @@ sailsChat is a multi-user chat app that demonstrates some new features in Sails 
 * New / reworked PubSub methods
 * Auto-generated routes and actions (blueprints) for associations
 
+The app features both private messages between two users, and public (multi-user) chatrooms, all updated in real time.  And all in under 100 lines of backend code (using the strictest method of line-counting :) )
+
 ## What it ain't
 sailsChat is *not* a sterling example of how to architect a web application.  The front-end is deliberately simplified, using no outside libraries besides jQuery and socket.io.  The back-end is similarly oversimplified--a new user is created whenever a socket connects to the server, and destroyed as soon as that socket disconnects.  This allows us to easily demonstrate concepts without having to implement a login system, sessions, or anything else extraneous.
 
