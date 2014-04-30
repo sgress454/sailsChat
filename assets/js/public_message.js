@@ -47,7 +47,7 @@ function onClickSendPublicMessage(e) {
   addMessageToChatRoom(window.me.id, roomId, message);
 
   // Send the message
-  socket.post('/chat/public', {room: roomId, msg: message});
+  io.socket.post('/chat/public', {room: roomId, msg: message});
 
 }
 
@@ -72,7 +72,7 @@ function addMessageToChatRoom(senderId, roomId, message) {
 
 // Handle an incoming public message from the server.
 function receiveRoomMessage(data) {
-  
+
   var sender = data.from;
   var room = data.room;
 
@@ -86,7 +86,7 @@ function receiveRoomMessage(data) {
 
 // Join the room currently selected in the list
 function joinRoom() {
-  
+
   // Get the room list
   var select = $('#rooms-list');
 
@@ -103,7 +103,7 @@ function joinRoom() {
   createPublicRoom({id:roomId, name:roomName});
 
   // Join the room
-  socket.post('/room/'+roomId+'/users', {id: window.me.id});
+  io.socket.post('/room/'+roomId+'/users', {id: window.me.id});
 
   // Update the room user count
   increaseRoomCount(roomId);
@@ -121,9 +121,9 @@ function onClickLeaveRoom(e) {
 
   // Remove the room from the page
   $('#public-room-'+roomId).remove();
-   
+
   // Call the server to leave the room
-  socket.delete('/room/'+roomId+'/users', {id: window.me.id});
+  io.socket.delete('/room/'+roomId+'/users', {id: window.me.id});
 
   // Update the room user count
   decreaseRoomCount(roomId);

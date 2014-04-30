@@ -6,14 +6,8 @@
  */
 
 
-// Immediately start connecting
-socket = io.connect();
-
-typeof console !== 'undefined' &&
-console.log('Connecting Socket.io to Sails.js...');
-
 // Attach a listener which fires when a connection is established:
-socket.on('connect', function socketConnected() {
+io.socket.on('connect', function socketConnected() {
 
     // Show the main UI
     $('#disconnect').hide();
@@ -24,7 +18,7 @@ socket.on('connect', function socketConnected() {
     // Listen for the "hello" event from the server, which will provide us
     // with information about our user (data.me). Open the /config/sockets.js
     // file to see where the "hello" event is emitted.
-    socket.on('hello', function(data) {
+    io.socket.on('hello', function(data) {
       window.me = data;
       updateMyName(data);
     });
@@ -33,10 +27,10 @@ socket.on('connect', function socketConnected() {
     // happens to a room we're subscribed to.  See the "autosubscribe" attribute
     // of the Room model to see which messages will be broadcast by default
     // to subscribed sockets.
-    socket.on('room', function messageReceived(message) {
+    io.socket.on('room', function messageReceived(message) {
 
       switch (message.verb) {
-        
+
         // Handle room creation
         case 'created':
           addRoom(message.data);
@@ -80,7 +74,7 @@ socket.on('connect', function socketConnected() {
     // happens to a user we're subscribed to.  See the "autosubscribe" attribute
     // of the User model to see which messages will be broadcast by default
     // to subscribed sockets.
-    socket.on('user', function messageReceived(message) {
+    io.socket.on('user', function messageReceived(message) {
 
       switch (message.verb) {
 
@@ -106,12 +100,12 @@ socket.on('connect', function socketConnected() {
           }
 
           break;
-        
+
         // Handle user destruction
         case 'destroyed':
           removeUser(message.id);
           break;
-      
+
         // Handle private messages.  Only sockets subscribed to the "message" context of a
         // User instance will get this message--see the onConnect logic in config/sockets.js
         // to see where a new user gets subscribed to their own "message" context
@@ -127,11 +121,11 @@ socket.on('connect', function socketConnected() {
 
     // Get the current list of users online.  This will also subscribe us to
     // update and destroy events for the individual users.
-    socket.get('/user', updateUserList);
+    io.socket.get('/user', updateUserList);
 
     // Get the current list of chat rooms. This will also subscribe us to
     // update and destroy events for the individual rooms.
-    socket.get('/room', updateRoomList);
+    io.socket.get('/room', updateRoomList);
 
     // Add a click handler for the "Update name" button, allowing the user to update their name.
     // updateName() is defined in user.js.
@@ -152,7 +146,7 @@ socket.on('connect', function socketConnected() {
     console.log('Socket is now connected!');
 
     // When the socket disconnects, hide the UI until we reconnect.
-    socket.on('disconnect', function() {
+    io.socket.on('disconnect', function() {
       // Hide the main UI
       $('#main').hide();
       $('#disconnect').show();

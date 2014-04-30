@@ -3,10 +3,10 @@ function updateMyName(me) {
   $('#my-name').val(me.name == 'unknown' ? 'User #' + me.id : me.name);
 }
 
-// Update the current user's username 
+// Update the current user's username
 function updateName() {
   // Use the Sails blueprint action to update the user
-  socket.put('/user/'+window.me.id, {name: $('#my-name').val()});
+  io.socket.put('/user/'+window.me.id, {name: $('#my-name').val()});
 }
 
 // Add a user to the list of available users to chat with
@@ -22,7 +22,7 @@ function addUser(user) {
   select.append(option);
 }
 
-// Remove a user from the list of available users to chat with, by sending 
+// Remove a user from the list of available users to chat with, by sending
 // either a user object or a user ID.
 function removeUser(user) {
 
@@ -35,7 +35,7 @@ function removeUser(user) {
   var userEl = $('#user-'+id).remove();
 
   // Re-append it to the body as a hidden element, so we can still
-  // get the user's name if we need it for other messages.  
+  // get the user's name if we need it for other messages.
   // A silly hack for a silly app.
   userEl.css('display', 'none');
   $('body').append(userEl);

@@ -12,7 +12,7 @@ function startPrivateConversation() {
   // Get the recipient's name from the text of the option in the <select>
   var recipientName = $('option:selected', select).text();
   var recipientId = select.val();
-  
+
   // Prompt for a message to send
   var message = prompt("Enter a message to send to "+recipientName);
 
@@ -23,7 +23,7 @@ function startPrivateConversation() {
   addMessageToConversation(window.me.id, recipientId, message);
 
   // Send the private message
-  socket.post('/chat/private', {to:recipientId, msg: message});
+  io.socket.post('/chat/private', {to:recipientId, msg: message});
 
 }
 
@@ -75,7 +75,7 @@ function onClickSendPrivateMessage(e) {
   addMessageToConversation(window.me.id, recipientId, message);
 
   // Send the message
-  socket.post('/chat/private', {to: recipientId, msg: message});
+  io.socket.post('/chat/private', {to: recipientId, msg: message});
 
 }
 
@@ -95,7 +95,7 @@ function addMessageToConversation(senderId, recipientId, message) {
 
 // Handle an incoming private message from the server.
 function receivePrivateMessage(data) {
-  
+
   var sender = data.from;
 
   // Create a room for this message if one doesn't exist

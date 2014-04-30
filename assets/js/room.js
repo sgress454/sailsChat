@@ -6,11 +6,11 @@ function newRoom() {
 
   // As long as a name is entered, create the new room.
   if (roomName) {
-    socket.post('/room', {name: roomName}, function(data) {
+    io.socket.post('/room', {name: roomName}, function(data) {
 
       // Add the new room to the rooms list
       addRoom(data);
-      
+
       // Select it in the list
       $('#rooms-list').val(data.id);
 
@@ -18,7 +18,7 @@ function newRoom() {
       createPublicRoom({id:data.id, name:data.name});
 
       // Join the room
-      socket.post('/room/'+data.id+'/users', {id: window.me.id});
+      io.socket.post('/room/'+data.id+'/users', {id: window.me.id});
 
       // Set the room user count to 1
       increaseRoomCount(data.id);
@@ -61,7 +61,7 @@ function decreaseRoomCount(roomId) {
   room.html(room.attr('data-name')+' ('+numUsers+')');
 }
 
-// Remove a user from the list of available rooms to join, by sending 
+// Remove a user from the list of available rooms to join, by sending
 // either a room object or a room ID.
 function removeRoom(room) {
 
