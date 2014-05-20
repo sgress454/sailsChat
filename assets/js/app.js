@@ -70,7 +70,7 @@ io.socket.on('connect', function socketConnected() {
 
     });
 
-    // Listen for the "room" event, which will be broadcast when something
+    // Listen for the "user" event, which will be broadcast when something
     // happens to a user we're subscribed to.  See the "autosubscribe" attribute
     // of the User model to see which messages will be broadcast by default
     // to subscribed sockets.
