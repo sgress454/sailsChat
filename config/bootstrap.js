@@ -10,8 +10,6 @@
 
 module.exports.bootstrap = function (cb) {
 
-	User.destroy({}).exec(function(err) {
-		Room.destroy({}).exec(cb);
-	});
+	return cb();
 
 };
