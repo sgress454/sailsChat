@@ -13,16 +13,22 @@ io.socket.on('connect', function socketConnected() {
     $('#disconnect').hide();
     $('#main').show();
 
-    // Once we have a connected socket, start listening for other events.
-
-    // Listen for the "hello" event from the server, which will provide us
-    // with information about our user (data.me). Open the /config/sockets.js
-    // file to see where the "hello" event is emitted.
-    io.socket.on('hello', function(data) {
+    // Announce that a new user is online--in this somewhat contrived example,
+    // this also causes the CREATION of the user, so each window/tab is a new user.
+    io.socket.get("/user/announce", function(data){
       window.me = data;
       updateMyName(data);
-    });
 
+      // Get the current list of users online.  This will also subscribe us to
+      // update and destroy events for the individual users.
+      io.socket.get('/user', updateUserList);
+
+      // Get the current list of chat rooms. This will also subscribe us to
+      // update and destroy events for the individual rooms.
+      io.socket.get('/room', updateRoomList);
+
+    });
+    
     // Listen for the "room" event, which will be broadcast when something
     // happens to a room we're subscribed to.  See the "autosubscribe" attribute
     // of the Room model to see which messages will be broadcast by default
@@ -62,6 +68,7 @@ io.socket.on('connect', function socketConnected() {
         // to see where a socket gets subscribed to a Room instance's "message" context.
         case 'messaged':
           receiveRoomMessage(message.data);
+          break;
 
         default:
           break;
@@ -70,7 +77,7 @@ io.socket.on('connect', function socketConnected() {
 
     });
 
-    // Listen for the "room" event, which will be broadcast when something
+    // Listen for the "user" event, which will be broadcast when something
     // happens to a user we're subscribed to.  See the "autosubscribe" attribute
     // of the User model to see which messages will be broadcast by default
     // to subscribed sockets.
@@ -118,14 +125,6 @@ io.socket.on('connect', function socketConnected() {
       }
 
     });
-
-    // Get the current list of users online.  This will also subscribe us to
-    // update and destroy events for the individual users.
-    io.socket.get('/user', updateUserList);
-
-    // Get the current list of chat rooms. This will also subscribe us to
-    // update and destroy events for the individual rooms.
-    io.socket.get('/room', updateRoomList);
 
     // Add a click handler for the "Update name" button, allowing the user to update their name.
     // updateName() is defined in user.js.

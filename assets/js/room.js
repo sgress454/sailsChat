@@ -45,6 +45,7 @@ function addRoom(room) {
   select.append(option);
 }
 
+// Increase the "number of users in room" indicator label for a room
 function increaseRoomCount(roomId) {
   var room = $('#room-'+roomId);
   var numUsers = parseInt(room.attr('data-users'), 10);
@@ -53,6 +54,7 @@ function increaseRoomCount(roomId) {
   room.html(room.attr('data-name')+' ('+numUsers+')');
 }
 
+// Decrease the "number of users in room" indicator label for a room
 function decreaseRoomCount(roomId) {
   var room = $('#room-'+roomId);
   var numUsers = parseInt(room.attr('data-users'), 10);
