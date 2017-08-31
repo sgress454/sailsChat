@@ -1,5 +1,7 @@
 # sailsChat
 
+> This version of sailsChat is compatible with Sails <= v0.12.x.  For the Sails-1.0-compatible version (and accompanying tutorial video), see [sailsChat-1.0](https://github.com/sgress454/sailsChat-1.0).
+
 ### A Sails application
 
 ## What it is
