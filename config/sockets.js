@@ -14,8 +14,10 @@ module.exports.sockets = {
   afterDisconnect: function(session, socket, cb) {
     console.log("DISCONNECT SESSION", session);
       try {
+        if (!session.users) return cb();
+
         // Look up the user ID using the connected socket
-        var userId = session.users[sails.sockets.id(socket)].id;
+        var userId = session.users[sails.sockets.getId(socket)].id;
 
         // Get the user instance
         User.findOne(userId).populate('rooms').exec(function(err, user) {
@@ -27,6 +29,9 @@ module.exports.sockets = {
             if (err) {return cb();}
             // Publish the destroy event to every socket subscribed to this user instance
             User.publishDestroy(user.id, null, {previous: user});
+
+            // clean up users list in session
+            delete session.users[sails.sockets.getId(socket)];
 
             return cb();
             

@@ -8,7 +8,7 @@ module.exports = {
   announce: function(req, res) {
 
     // Get the socket ID from the reauest
-    var socketId = sails.sockets.id(req);
+    var socketId = sails.sockets.getId(req);
 
     // Get the session from the request
     var session = req.session;

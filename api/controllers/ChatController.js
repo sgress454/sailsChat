@@ -3,7 +3,7 @@ module.exports = {
   // Send a private message from one user to another
   private: function(req, res) {
     // Get the ID of the currently connected socket
-    var socketId = sails.sockets.id(req.socket);
+    var socketId = sails.sockets.getId(req.socket);
     // Use that ID to look up the user in the session
     // We need to do this because we can have more than one user
     // per session, since we're creating one user per socket
@@ -23,7 +23,7 @@ module.exports = {
   // Post a message in a public chat room
   public: function(req, res) {
     // Get the ID of the currently connected socket
-    var socketId = sails.sockets.id(req.socket);
+    var socketId = sails.sockets.getId(req.socket);
     // Use that ID to look up the user in the session
     // We need to do this because we can have more than one user
     // per session, since we're creating one user per socket

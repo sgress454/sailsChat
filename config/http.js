@@ -6,6 +6,9 @@
  */
 module.exports.http = {
 
+	// The number of seconds to cache files being served from disk
+	// (only works in production mode)
+	cache: 31557600000
 
 };
 
@@ -31,7 +34,4 @@ module.exports.http = {
  */
 module.exports.cache = {
 
-	// The number of seconds to cache files being served from disk
-	// (only works in production mode)
-	maxAge: 31557600000
 };
